@@ -30,5 +30,3 @@ He dejado en el código todas las subconsultas que me han ayudado a sacar la sol
 
 ### Ejercicio 2: sacar los géneros favoritos de cada socio
 Igual que antes, he dejado en el código las subconsultas que me han llevado a la solución. La definitiva está debajo de donde pone **ESTA ES LA CONSULTA FINAL PARA OBTENER EL NOMBRE DEL GÉNERO MÁS ESCOGIDO POR CADA SOCIO Y RESPONDER AL EJERCICIO 2**.
-
-Por último, sí, en uno de los commits he escrito "archibo" en vez de "archivo"... ¡Se me ha ido el dedo!
