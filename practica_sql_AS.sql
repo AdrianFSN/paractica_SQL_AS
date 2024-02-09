@@ -545,9 +545,6 @@ INSERT INTO tmp_videoclub (id_copia,fecha_alquiler_texto,dni,nombre,apellido_1,a
 	 (308,'2024-01-25','1638778M','Angel','Lorenzo','Caballero','angel.lorenzo.caballero@gmail.com','698073069','47008','2011-07-30','82','1','Izq.','Sol','1Izq.','El bazar de las sorpresas','Comedia','Alfred Kralik es el tímido jefe de vendedores de Matuschek y Compañía, una tienda de Budapest. Todas las mañanas, los empleados esperan juntos la llegada de su jefe, Hugo Matuschek. A pesar de su timidez, Alfred responde al anuncio de un periódico y mantiene un romance por carta. Su jefe decide contratar a una tal Klara Novak en contra de la opinión de Alfred. En el trabajo, Alfred discute constantemente con ella, sin sospechar que es su corresponsal secreta.','Ernst Lubitsch','2024-01-25',NULL);
 
 	
-/*select * from tmp_videoclub tv where tv.email = 'angel.lorenzo.caballero@gmail.com';
-select * from tmp_videoclub tv where tv.codigo_postal  = '47008';
-select * from tmp_videoclub tv where tv.id_copia = '305';*/
 
 create table if not exists socio (
 	id_socio serial primary key,
@@ -694,7 +691,7 @@ where id_ficha_alquiler = 200
 ;*/
 
 /*CONSULTA 1 DE LA PRÁCTICA: Películas que están disponibles para alquilar (título y número de copias disponibles)*/
-
+/*Primero cuento cuántas copias hay de cada película y creo una vista para esta cosulta*/
 select p.titulo_pelicula, count(p.titulo_pelicula) as copias_x_pelicula
 from pelicula p 
 group by p.titulo_pelicula 
@@ -705,119 +702,100 @@ from pelicula p
 group by p.titulo_pelicula 
 order by p.titulo_pelicula ;
 
-select p.titulo_pelicula, ra.id_copia_pelicula,  max(ra.devolucion_alquiler) as "fecha_ultima_devolucion"
+/*Después veo las películas que están alquiladas*/
+select p.titulo_pelicula, ra.id_copia_pelicula,  ra.devolucion_alquiler as "fecha_ultima_devolucion"
 from registro_alquileres ra
 inner join pelicula p on p.id_copia_pelicula = ra.id_copia_pelicula 
 where ra.devolucion_alquiler is null
-group by p.titulo_pelicula , ra.id_copia_pelicula 
+group by p.titulo_pelicula , ra.id_copia_pelicula , "fecha_ultima_devolucion"
 order by p.titulo_pelicula ;
 
-select registro_copias_alquiladas.titulo_pelicula, count(registro_copias_alquiladas.titulo_pelicula) as "num_copias_alquiladas" from (select p.titulo_pelicula, ra.id_copia_pelicula,  max(ra.devolucion_alquiler) as "fecha_ultima_devolucion"
+/*Para luego anidar esa consulta y contar cuántas copias están alquiladas actualmente. Creo una vista para que la consulta sea más manejable*/
+select registro_copias_alquiladas.titulo_pelicula, count(registro_copias_alquiladas.titulo_pelicula) as "num_copias_alquiladas" from (select p.titulo_pelicula, ra.id_copia_pelicula,  ra.devolucion_alquiler as "fecha_ultima_devolucion"
 from registro_alquileres ra
 inner join pelicula p on p.id_copia_pelicula = ra.id_copia_pelicula 
 where ra.devolucion_alquiler is null
-group by p.titulo_pelicula , ra.id_copia_pelicula 
+group by p.titulo_pelicula , ra.id_copia_pelicula , "fecha_ultima_devolucion"
 order by p.titulo_pelicula) registro_copias_alquiladas
 group by registro_copias_alquiladas.titulo_pelicula;
 
-create view vista_registro_copias_alquiladas as select registro_copias_alquiladas.titulo_pelicula, count(registro_copias_alquiladas.titulo_pelicula) as "num_copias_alquiladas" from (select p.titulo_pelicula, ra.id_copia_pelicula,  max(ra.devolucion_alquiler) as "fecha_ultima_devolucion"
+create view vista_registro_copias_alquiladas as select registro_copias_alquiladas.titulo_pelicula, count(registro_copias_alquiladas.titulo_pelicula) as "num_copias_alquiladas" from (select p.titulo_pelicula, ra.id_copia_pelicula,  ra.devolucion_alquiler as "fecha_ultima_devolucion"
 from registro_alquileres ra
 inner join pelicula p on p.id_copia_pelicula = ra.id_copia_pelicula 
 where ra.devolucion_alquiler is null
-group by p.titulo_pelicula , ra.id_copia_pelicula 
+group by p.titulo_pelicula , ra.id_copia_pelicula , "fecha_ultima_devolucion"
 order by p.titulo_pelicula) registro_copias_alquiladas
 group by registro_copias_alquiladas.titulo_pelicula;
 
-/*############### ESTA ES LA CONSULTA QUE SACA LAS COPIAS DISPONIBLES ###############*/
+/*############### ESTA ES LA CONSULTA QUE SACA LAS COPIAS DISPONIBLES Y RESPONDE AL EJERCICIO 1  ###############*/
 
 select copalq.titulo_pelicula, coptot.copias_x_pelicula - copalq.num_copias_alquiladas as "Copias disponibles"  from vista_registro_copias_alquiladas copalq
 inner join copias_totales coptot on coptot.titulo_pelicula = copalq.titulo_pelicula;
 
-/*DEJO COMENTADO EL PASO 1: Consulta base para sacar las películas libres, filtradas por la fecha más reciente de devolución y aggrupadas por título e id de copia
-select p.titulo_pelicula as "Título", max(ra.devolucion_alquiler) as "Última fecha de devolución"
-from registro_alquileres ra
-inner join pelicula p on p.id_copia_pelicula = ra.id_copia_pelicula 
-where ra.devolucion_alquiler is not null
-group by p.titulo_pelicula , ra.id_copia_pelicula 
-order by p.titulo_pelicula 
-;*/
-
-/*############### ERROR: SACA LAS PELICULAS QUE HAN SIDO ALQUILADAS Y DEVUELTAS ###############*/
-/*select copias_disponibles.titulo_pelicula "Película disponible", count(copias_disponibles.titulo_pelicula) "Copias disponibles"
-from (select p.titulo_pelicula, max(ra.devolucion_alquiler)
-from registro_alquileres ra
-inner join pelicula p on p.id_copia_pelicula = ra.id_copia_pelicula 
-where ra.devolucion_alquiler is not null
-group by p.titulo_pelicula , ra.id_copia_pelicula 
-order by p.titulo_pelicula)copias_disponibles
-group by copias_disponibles.titulo_pelicula;*/
 
 /*CONSULTA 2 DE LA PRÁCTICA: género favorito de cada socio: número de socio, nombre y género*/
 
 /*PASO 1: Consulta para sacar todas las películas alquiladas por cada socio y sus géneros*/
-/*select ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero, ra.inicio_alquiler , ra.devolucion_alquiler
+select ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero
 from registro_alquileres ra 
 inner join pelicula p on p.id_copia_pelicula = ra.id_copia_pelicula 
 inner join genero g on g.id_genero = p.genero_pelicula 
 inner join socio s on s.id_socio = ra.id_socio 
-group by ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero , ra.inicio_alquiler , ra.devolucion_alquiler
-order by ra.id_socio 
-;*/
+group by ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero
+order by ra.id_socio ;
 
-/*PASO 2: Consulta para contar las repeticiones de cada género alquilado*/
-/*select contando.id_socio , contando.nombre_socio, contando.apellidos_socio,  contando.nombre_genero , count(contando.nombre_genero) as "contador"
-from (select ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero, ra.inicio_alquiler , ra.devolucion_alquiler
+/*PASO 2: Consulta para contar las repeticiones de cada género alquilado por cada socio. Anido en ella la consulta anterior*/
+select contando.id_socio , contando.nombre_socio, contando.apellidos_socio,  contando.nombre_genero , count(contando.nombre_genero) as "contador"
+from (select ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero
 from registro_alquileres ra 
 inner join pelicula p on p.id_copia_pelicula = ra.id_copia_pelicula 
 inner join genero g on g.id_genero = p.genero_pelicula 
 inner join socio s on s.id_socio = ra.id_socio 
-group by ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero , ra.inicio_alquiler , ra.devolucion_alquiler
+group by ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero
 order by ra.id_socio) contando
 group by contando.id_socio , contando.nombre_socio, contando.apellidos_socio, contando.nombre_genero
-order by contando.id_socio
-;*/
+order by contando.id_socio ;
 
 
-/*Consulta para sacar la puntuación más alta de todos los géneros alquilados por cada socio (No muestra el nombre del género)*/
-/*select extraer_maximo.id_socio, extraer_maximo.nombre_socio, extraer_maximo.apellidos_socio, max(extraer_maximo.contador) genero_maximo from (select contando.id_socio , contando.nombre_socio, contando.apellidos_socio, contando.nombre_genero , count(contando.nombre_genero) as "contador"
-from (select ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero, ra.inicio_alquiler , ra.devolucion_alquiler
+/* PASO 3: Consulta para sacar, de todos los géneros alquilados por cada socio, el que más se repite (No muestro el nombre del género)*/
+select extraer_maximo.id_socio, extraer_maximo.nombre_socio, extraer_maximo.apellidos_socio, max(extraer_maximo.contador) genero_maximo from (select contando.id_socio , contando.nombre_socio, contando.apellidos_socio, contando.nombre_genero , count(contando.nombre_genero) as "contador"
+from (select ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero
 from registro_alquileres ra 
 inner join pelicula p on p.id_copia_pelicula = ra.id_copia_pelicula 
 inner join genero g on g.id_genero = p.genero_pelicula 
 inner join socio s on s.id_socio = ra.id_socio 
-group by ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero , ra.inicio_alquiler , ra.devolucion_alquiler
+group by ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero
 order by ra.id_socio) contando
 group by contando.id_socio , contando.nombre_socio, contando.apellidos_socio, contando.nombre_genero
 order by contando.id_socio
 ) extraer_maximo
 group by extraer_maximo.id_socio, extraer_maximo.nombre_socio, extraer_maximo.apellidos_socio
 order by extraer_maximo.id_socio
-;*/
+;
 
-/*Creo vistas para que mis selecciones anidadas sean más manejables*/
+/* PASO 4: Creo vistas para que mis selecciones anidadas sean más manejables*/
 
 /*1, la vista del recuento por cada género por socio*/
 create view recuento_generos as select contando.id_socio , contando.nombre_socio, contando.apellidos_socio,  contando.nombre_genero , count(contando.nombre_genero) as "contador"
-from (select ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero, ra.inicio_alquiler , ra.devolucion_alquiler
+from (select ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero
 from registro_alquileres ra 
 inner join pelicula p on p.id_copia_pelicula = ra.id_copia_pelicula 
 inner join genero g on g.id_genero = p.genero_pelicula 
 inner join socio s on s.id_socio = ra.id_socio 
-group by ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero , ra.inicio_alquiler , ra.devolucion_alquiler
+group by ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero
 order by ra.id_socio) contando
 group by contando.id_socio , contando.nombre_socio, contando.apellidos_socio, contando.nombre_genero
-order by contando.id_socio
-;
+order by contando.id_socio ;
 
 
 /*2, la vista de obtener el máximo de entre todos los géneros por cada socio*/
 create view max_genero_x_socio as select extraer_maximo.id_socio, extraer_maximo.nombre_socio, extraer_maximo.apellidos_socio, max(extraer_maximo.contador) genero_maximo from (select contando.id_socio , contando.nombre_socio, contando.apellidos_socio, contando.nombre_genero , count(contando.nombre_genero) as "contador"
-from (select ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero, ra.inicio_alquiler , ra.devolucion_alquiler
+from (select ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero
 from registro_alquileres ra 
 inner join pelicula p on p.id_copia_pelicula = ra.id_copia_pelicula 
 inner join genero g on g.id_genero = p.genero_pelicula 
 inner join socio s on s.id_socio = ra.id_socio 
-group by ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero , ra.inicio_alquiler , ra.devolucion_alquiler
+group by ra.id_socio , s.nombre_socio , s.apellidos_socio , ra.id_copia_pelicula, p.titulo_pelicula, g.nombre_genero
 order by ra.id_socio) contando
 group by contando.id_socio , contando.nombre_socio, contando.apellidos_socio, contando.nombre_genero
 order by contando.id_socio
@@ -826,7 +804,7 @@ group by extraer_maximo.id_socio, extraer_maximo.nombre_socio, extraer_maximo.ap
 order by extraer_maximo.id_socio
 ;
 
-/* ############### CONSULTA FINAL para obtener el nombre del género más escogido por cada socio ############### */
+/* ############### ESTA ES LA CONSULTA FINAL PARA OBTENER EL NOMBRE DEL GÉNERO MÁS ESCOGIDO POR CADA SOCIO Y RESPONDER AL EJERCICIO 2 ############### */
 
 select recgen.id_socio as "Núm. socio", recgen.nombre_socio as "Nombre", recgen.apellidos_socio as "Apellidos", recgen.nombre_genero as "Género favorito", recgen.contador as "Veces solicitado" from recuento_generos recgen
 left join max_genero_x_socio mxgen on mxgen.id_socio = recgen.id_socio
