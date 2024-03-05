@@ -11,17 +11,17 @@ Lo he diseñado en siete tablas:
 * Película
 * Director película
 * Género
-* Sinopsis
+* Copia de película
 * Registro alquileres
 
 ### Algunas notas sobre las tablas
-**Registro alquileres** es la pieza que permite conectar los socios con las películas.
+**Registro alquileres** es la pieza que permite conectar los socios con las copias de las películas y, desde esta, con las películas.
 
 **Socio** es la tabla desde la que se puede llegar a las direcciones postales de los socios.
 
-**Película** es la tabla desde la que se puede acceder a las sinopsis, los directores y el género de cada título.
+**Película** es la tabla desde la que se puede acceder a las copias, los directores y el género de cada título.
 
-Pensé en hacer otra tabla para los títulos, pero creo que no era necesario complicar más el diagrama.
+**Copias registro** es la que conecta la tabla película con Registro alquileres.
 
 ## El script
 Después de crear las tablas, he ido comentando lo que hacía para no perderme. Espero que sea útil para vcer la lógica que he seguido para las dos consultas principales de la práctica.
