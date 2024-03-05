@@ -11,7 +11,7 @@ Lo he diseñado en siete tablas:
 * Película
 * Director película
 * Género
-* Copia de película
+* Copias registro
 * Registro alquileres
 
 ### Algunas notas sobre las tablas
