@@ -747,12 +747,11 @@ order by p.titulo_pelicula) registro_copias_alquiladas
 group by registro_copias_alquiladas.titulo_pelicula
 ;
 
-/*############### ESTA ES LA CONSULTA QUE SACA LAS COPIAS DISPONIBLES Y RESPONDE AL EJERCICIO 1  ###############*/
-
-select copalq.titulo_pelicula as "Título", coptot.copias_x_pelicula - copalq.num_copias_alquiladas as "Copias disponibles"  from vista_registro_copias_alquiladas copalq
+/*############### ESTA ES LA CONSULTA QUE SACA LAS PELÍCULAS DISPONIBLES Y CUÁNTAS COPIAS Y RESPONDE AL EJERCICIO 1  ###############*/
+select copalq.titulo_pelicula as "Películas disponibles", coptot.copias_x_pelicula - copalq.num_copias_alquiladas as "Copias disponibles"  from vista_registro_copias_alquiladas copalq
 inner join copias_totales coptot on coptot.titulo_pelicula = copalq.titulo_pelicula
+where coptot.copias_x_pelicula - copalq.num_copias_alquiladas > 0;
 ;
-
 
 
 /*CONSULTA 2 DE LA PRÁCTICA: género favorito de cada socio: número de socio, nombre y género*/

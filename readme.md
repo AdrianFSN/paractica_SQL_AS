@@ -33,7 +33,7 @@ Lo que hago es calcular primero cuántas copias totales tengo de cada título.
 
 Después, calculo cuantas copias de cada título están alquiladas, porque tienen fecha NULL.
 
-Por último, resto a las copias totales las copias alquiladas.
+Por último, resto a las copias totales las copias alquiladas y filtro para que se muestren solo aquellas cuyo número de copias disponible es mayor que cero.
 
 ### Ejercicio 2: sacar los géneros favoritos de cada socio
 Igual que antes, he dejado en el código las subconsultas que me han llevado a la solución. La definitiva está debajo de donde pone **ESTA ES LA CONSULTA FINAL PARA OBTENER EL NOMBRE DEL GÉNERO MÁS ESCOGIDO POR CADA SOCIO Y RESPONDER AL EJERCICIO 2**.
